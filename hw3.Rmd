@@ -1,0 +1,169 @@
+---
+title: "STAT 327 Homework 3"
+output: html_document
+---
+
+We'll grade your homework by
+
+* opening your "hw3.Rmd" file in RStudio
+* clicking "Knit HTML"
+* reading the HTML output
+* reading your "hw3.Rmd"
+
+You should write R code anywhere you see an empty R code chunk. You
+should write English text anywhere you see "..."; please surround it
+with doubled asterisks (`**...**`) so that it will show up as boldface
+and be easy for us to find.
+
+Include reasonable labels (titles, axis labels, legends, etc.) with
+each of your graphs.
+
+Name: **Nan Yang**
+
+Email: **nyang49@wisc.edu**
+
+We'll use data on housing values in suburbs of Boston. They are in an
+R package called "MASS." (An R package is a collection of code,
+data, and documentation. "MASS" refers to the book "Modern Applied
+Statistics with S." R developed from the earlier language, S.) The
+MASS package comes with the default R installation, so it's already on
+your computer.  However, it's not loaded into your R session by
+default. So we'll load it via the `require()` command (there's nothing
+for you to do here):
+
+```{r}
+require("MASS")
+```
+
+Run `?Boston` (outside this R Markdown document) to read the help page for the `Boston` data frame.
+
+Convert the `chas` variable to a factor with labels "off" and "on" (referring to the Charles river).
+
+```{r}
+Boston$chas= factor(Boston$chas,levels = c(1,0), labels = c("on","off"))
+```
+
+How many rows are in the Boston data frame? How many columns?
+
+```{r}
+columns = ncol(Boston)
+rows = nrow(Boston)
+cat(sep = "", "There are ", columns, " columns", "\n")
+cat(sep = "", "There are ", rows, " rows", "\n")
+```
+
+What does a row represent?
+
+**Each row represent a unique surbub in Boston, with statistics about the basic conditions of that surbub **
+
+What does a column represent?
+
+**From left to right, each column represents all observations of one specific variable. In this case, it shows one basic condition of all different surbubs, which are**
+
+**crime rate by town,** **proportion of residential land zoned for lots over 25,000 sq.ft, proportion of non-retail business acres per town, Charles River dummy variable (= 1/on if tract bounds river; 0/off otherwise;), nitrogen oxides concentration (parts per 10 million), average number of rooms per dwelling, proportion of owner-occupied units built prior to 1940, weighted mean of distances to five Boston employment centres, index of accessibility to radial highways, full-value property-tax rate per \$10,000, pupil-teacher ratio by town, 1000(Bk - 0.63)^2 where Bk is the proportion of blacks by town, lower status of the population (percent), median value of owner-occupied homes in \$1000s.**
+
+
+
+Make a density plot (with rug) of tax rates.
+
+```{r}
+plot(density(Boston$tax))
+rug(Boston$tax)
+```
+
+Describe the shape of the distribution of tax rates.
+
+**The graph shows that it has 2 different local maxima in probability densit function, so It's a bimodel distribution with 2 peaks around 300 and 700. The spread around main mode is wider than that around smaller mode.**
+
+Note that the distribution shape doesn't make sense in light of the rug representation of the data. Make a histogram of the tax rates.
+
+```{r}
+# overview of graph with detailed settingx
+hist(Boston$tax, breaks = 100, xlim = c(0,800),freq = TRUE)
+
+# graph with defalt setting
+hist(Boston$tax)
+```
+
+Why is the second peak of the density plot so large? In what way is the rug representation of the data inadequate? Write a line or two of code to figure it out, and then explain it.
+
+```{r}
+fisrt = length(which(Boston$tax == max(Boston$tax)))
+second = length(which(Boston$tax == sort(Boston$tax, decreasing = TRUE)[fisrt + 1]))
+cat(sep = "", "There are ", fisrt, " occurrences of the maximum value, ", max(Boston$tax), ", and ", second, " occurrences of the second maximum value, ", sort(Boston$tax, decreasing = TRUE)[fisrt + 1],", in this histogram.", "\n")
+
+```
+**There are more occurrences of tax rate around 666 and 711 at second peak. So it's large.**
+**They are represented as a single dark line with the rug, so the representation of the data is inadequate.**
+
+
+
+Make a barplot of "chas".
+
+```{r}
+a = table(Boston$chas)
+barplot(a,ylim = c(0,500))
+```
+
+How many neighborhoods are on the Charles river?
+
+```{r}
+num = length(which(Boston$chas == "on"))
+cat(sep = "", "There are ", num, " neighborhoods on the Charles river.", "\n")
+```
+
+Make a single graph consisting of three plots: 
+
+* a scatterplot of "nox" on the y-axis vs. "dis" on the x-axis 
+* a (vertical) boxplot of "nox" left of the scatterplot's y-axis
+* a (horizontal) boxplot of "dis" below the scatterplot's x-axis
+
+Hint: use `layout()` with a 4x4 matrix, using the top-right 3x3 corner
+for the scatterplot, leaving the bottom-left 1x1 corner blank, and
+using the other parts for the boxplots.
+
+(An optional challenge, worth 0 extra credit points: remove the axis
+and plot border from each boxplot.)
+
+```{r, fig.width=7, fig.height=7}
+
+figure = matrix(data = c(1, 3, 3, 3, 1, 3, 3, 3, 1, 3, 3, 3, 0, 2, 2, 2), nrow = 4, ncol = 4, byrow = TRUE)
+layout(figure)
+left = boxplot(Boston$nox)
+below = boxplot(Boston$dis, horizontal = TRUE)
+scatterplot = plot(x = Boston$dis, y = Boston$nox)
+
+```
+
+Look into the highest-crime neighborhood by making a single graph of one column of three rows:
+
+* Find the row number, r, of the neighborhood with the highest "crim".
+* Make a density plot of "crim". Include a rug to show the data.
+* Add a red circle at (x, y) = (max crime rate, 0) to make this maximum crime rate stand out.
+* Make a density plot with rug of "medv", adding a red circle at (x, y) = (medv[r], 0) to see what medv corresponds to the highest crime rate.
+* Repeat the last step for "ptratio".
+
+```{r}
+r = order(Boston$crim,decreasing = TRUE)[1]
+cat(sep = "", " The row ", r, " is the row of the neighborhood with the highest crim.", "\n")
+
+
+figure = matrix(data = c(1,2,3), nrow = 3, ncol = 1, byrow = TRUE)
+layout(figure)
+
+plot(density(Boston$crim), main = "crime rate")
+points(max(Boston$crim),0, pch = 1, col = "red")
+rug(Boston$crim)
+
+plot(density(Boston$medv),main = "median value of owner-occupied homes in $1000s." )
+points(Boston[["medv"]][r],0,pch = 1, col = "red")
+rug(Boston$medv)
+
+plot(density(Boston$ptratio), main = "pupil-teacher ratio by town")
+points(Boston[["ptratio"]][r],0,pch = 1, col = "red")
+rug(Boston$ptratio)
+```
+
+What do you notice about the ptratio and medv for the highest-crime neighborhood?
+
+** By comparing three graphs, the highest-crime neighborhood has common(normal) pupil-teacher ratio by town but has very few number of median value of owner-occupied homes in $1000s**
